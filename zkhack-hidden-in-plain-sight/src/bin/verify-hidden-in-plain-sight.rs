@@ -130,6 +130,7 @@ fn main() {
     println!("====  poly  ====");
     for i in 0..checking_poly_vec.len() {
         println!("acct_poly[{}] = {}", i, checking_poly_vec[i]);
+        println!("");
     }
 
     println!("====  address  ====");
