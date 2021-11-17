@@ -133,12 +133,13 @@ fn main() {
         println!("");
     }
 
+    // in little endian
     println!("====  address  ====");
-    for i in 0..accts[index].len() {
+    for i in (0..accts[index].len()).rev() {
         println!("{}", accts[index][i].into_repr());
     }
 
-    // address = "0xDA87BE72D77766E5B65AA9F3CE0C5664A49246734EDDC150AA0D0871ADBC05C1"
+    // address = hex::decode("C105BCAD71080DAA50C1DD4E734692A464560CCEF3A95AB6E56677D772BE87DA").unwrap();
 
     // Replace with the solution polynomial, derived from the account!
     let solution_blinded_acct = DensePolynomial::from_coefficients_vec(checking_poly_vec);
