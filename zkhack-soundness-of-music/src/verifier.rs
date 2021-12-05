@@ -33,5 +33,7 @@ pub fn verify<E: PairingEngine>(
         (pk + proof.pi_input) + (pk + proof.pi_input) + proof.pi_output.mul(-E::Fr::one()).into(),
         E::G2Affine::prime_subgroup_generator(),
     ) == E::pairing(proof.pi_H, setup.rho_Z);
+
+    println!("a = {}, b = {}, c = {}, d = {}", a,b,c,d);
     a && b && c && d
 }

@@ -7,6 +7,8 @@ use ark_poly::UVPolynomial;
 use itertools::izip;
 use std::ops::Mul;
 
+use std::ops::Neg;
+
 #[derive(Debug)]
 pub struct Proof<E: PairingEngine> {
     pub pi_input: E::G1Affine,
@@ -102,5 +104,46 @@ pub fn prove<E: PairingEngine>(
         pi_output_prime: output_polynomials_prime.into(),
         pi_K: K_polynomials.into(),
         pi_H: pi_H.into(),
+    }
+}
+
+// just noticed that H = 0
+// which means we don't even need to construct the P polynomial
+// we only need to make sure the fake private inputs cancel out the real public inputs
+pub fn prove_alter<E: PairingEngine>(
+    public_inputs: &[E::Fr],
+    private_inputs_len: usize,
+    setup: &Setup<E>,
+) -> Proof<E> {
+    let mut fake_pub_inputs = vec![];
+    let mut fake_pri_inputs = vec![];
+
+    for i in 0..public_inputs.len() {
+        fake_pub_inputs.push(public_inputs[i].neg());
+    }
+
+    for _ in 0..private_inputs_len {
+        fake_pri_inputs.push(E::Fr::zero());
+    }
+
+    let mut private_input_polynomials = E::G1Projective::zero();
+    let mut private_input_polynomials_prime = E::G1Projective::zero();
+
+    for (private_input, private_input_polynomial, private_input_polynomial_prime) in izip!(
+        fake_pub_inputs.iter().chain(fake_pri_inputs.iter()),
+        setup.inputs.iter(),
+        setup.inputs_prime.iter()
+    ) {
+        private_input_polynomials += private_input_polynomial.mul(*private_input);
+        private_input_polynomials_prime += private_input_polynomial_prime.mul(*private_input);
+    }
+
+    Proof::<E> {
+        pi_input: private_input_polynomials.into(),
+        pi_input_prime: private_input_polynomials_prime.into(),
+        pi_output: E::G1Affine::zero(),
+        pi_output_prime: E::G1Affine::zero(),
+        pi_K: E::G1Affine::zero(),
+        pi_H: E::G1Affine::zero(),
     }
 }
